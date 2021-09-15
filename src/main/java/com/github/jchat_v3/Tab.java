@@ -1,4 +1,4 @@
-package java.main.com.github.onlytr3v0r.jchat_v3;
+package main.java.com.github.jchat_v3;
 
 // imports
 import javax.swing.JLabel;
