@@ -10,32 +10,44 @@
 
     <target name="prep" 
         description="Prepeare directory structure.">
-        <!-- Getting timestamp in format "dd/MM/yyy HH:mm:ss"-->
-        <tstamp>
-            <format property="time" pattern="dd-MM-yyyy" locale="en,GB"/>
-        </tstamp>
-
         <mkdir dir="${build}"/>
+        <mkdir dir="${build}/META-INF"/>
+
+        <touch file="${distribution}/plus1.jar" mkdirs="true"/>
+        <resourcecount property="jars_in_dist">
+            <fileset dir="${distribution}">
+                <include name="*.jar"/>
+            </fileset>
+        </resourcecount>
+        <delete file="${distribution}/plus1.jar"/>
     </target>
 
     <target name="compile" depends="prep"
         description="Compile contents of ${src} into ${build}">
-        
         <javac srcdir="${source}" destdir="${build}"/>
     </target>
 
-    <target name="package" depends="compile"
-        description="Package contents of ${build} into a jar for distribution.">
+    <target name="jar" depends="compile">
+        <mkdir dir="${distribution}" />
+        <manifest file="${build}/META-INF/MANIFEST.MF">
+            <attribute name="Class-Path" value="JChat_V3.jar" />
+            <attribute name="Main-Class" value="main.java.com.github.jchat_v3.Main"/>    
+        </manifest>
 
-        <mkdir dir="${distribution}"/>
-        <!-- Put contents of ${build} into a jar.-->
-        <jar jarfile="${distribution}/JChatV3_${time}.jar" basedir="${build}"/>
+        <jar manifest="${build}/META-INF/MANIFEST.MF" jarfile="${distribution}/JChat_V3_${jars_in_dist}.jar" basedir="${build}" />    
     </target>
 
     <target name="clean"
         description="Clean the project.">
-        <!-- Delete the ${build} and ${distribution} directories.-->
         <delete dir="${build}"/>
         <delete dir="${distribution}"/>
+    </target>
+
+    <target name="main" depends="jar"
+        description="Compile, package and run.">
+        <echo>
+            Building and running jar.
+        </echo>
+        <java jar="${distribution}/JChat_V3_${jars_in_dist}.jar" fork="true"/>
     </target>
 </project>
