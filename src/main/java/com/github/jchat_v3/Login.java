@@ -8,9 +8,11 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,10 +20,13 @@ import java.util.logging.Logger;
 public class Login extends JDialog {
     private static final Logger logger = Logger.getLogger(Login.class.getName());
 
+    private JFrame frame;
+
     private static final int WIDTH = 200;
     private static final int HEIGHT = 350;
 
     private int port = 0;
+    private String prePort = null;
     private String host = null;
 
     private JButton confirm;
@@ -29,10 +34,11 @@ public class Login extends JDialog {
     private JTextField portField;
 
     public Login(JFrame frame) {
-        super(frame, "Input Connection Details.");
+        super(frame, "Input Details.");
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         logger.setLevel(Level.INFO);
-
+        this.frame = frame;
         JPanel root = new JPanel();
 
         JLabel hostLabel = new JLabel("Host:", SwingConstants.CENTER);
@@ -43,7 +49,7 @@ public class Login extends JDialog {
         portField.setHorizontalAlignment(SwingConstants.CENTER);
         confirm = new JButton("Confirm?");
 
-        confirm.addActionListener(new ClickListener());
+        confirm.addActionListener(new ClickHandler());
 
         root.add(hostLabel);
         root.add(hostField);
@@ -68,19 +74,35 @@ public class Login extends JDialog {
         return host;
     }
 
+    // True -> host != null, port != 0, checkinput == true
     public boolean hasInput() {
-        return !(host == null && port == 0);
+        return !(host == null && port == 0) && checkInput();
     }
 
-    private class ClickListener implements ActionListener {
+    public boolean checkInput() {
+        if (host == null && port == 0)
+            return false;
+        try {
+            port = Integer.parseInt(prePort);
+        } catch (NumberFormatException exception) {
+            return false;
+        }
+        return true;
+    }
+
+    private class ClickHandler implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
-                if(event.getSource() == confirm) {
-                    logger.log(Level.INFO, "confirm button pressed.");
-                    port = Integer.parseInt(portField.getText());
-                    host = hostField.getText();
+            if (event.getSource() == confirm) {
+                logger.log(Level.INFO, "confirm button pressed.");
+                prePort = portField.getText();
+                host = hostField.getText();
+
+                if (!checkInput()) {
+                    JOptionPane.showMessageDialog(frame, "Invalid input entered.", "Invalid input.", JOptionPane.ERROR_MESSAGE);
+                    logger.log(Level.WARNING, "Invalid input detetcted.");
                 }
+            }
         }
     }
-
 }

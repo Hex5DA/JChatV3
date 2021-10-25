@@ -2,10 +2,19 @@ package main.java.com.github.jchat_v3;
 
 // imports
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
+import javax.swing.event.MenuListener;
+import javax.swing.event.MenuEvent;
 
-import java.util.ArrayList;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,32 +25,50 @@ public class Main extends JFrame {
 
     private static final Logger logger = Logger.getLogger(Main.class.getName());
 
-    private ArrayList<Tab> tabs;
+    private HashMap<Tab, String> tabs;
     private JTabbedPane tabbedPane;
+    public JMenu deleteTab;
+    public JMenuItem newTab;
 
     public Main() {
         super("Java Chatroom V3");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(1400, 700);
         setLocationRelativeTo(null);
-
-        tabs = new ArrayList<>();
+        setLayout(new BorderLayout());
 
         logger.setLevel(Level.INFO);
-
+        tabs = new HashMap<>();
         tabbedPane = new JTabbedPane();
-
-        // temporary
         add(tabbedPane);
-        setVisible(true);
 
-        Connection connection = getConnectionDetails();
-        addTab(new Tab(connection), "Tab");
+        JMenuBar top = new JMenuBar();
+        newTab = new JMenuItem("New tab");
+        newTab.addActionListener(new ClickHandler());
+        deleteTab = new JMenu("Delete tab");
+
+        top.add(newTab);
+        top.add(deleteTab);
+        deleteTab.addMenuListener(new MenuHandler());
+
+        add(top, BorderLayout.NORTH);
+        addTab(new Tab(getConnectionDetails()), "Tab " + (tabs.size() + 1));    
+        //updateMenuContents();
+        setVisible(true);
+    }
+
+    public void updateMenuContents() {
+        deleteTab.removeAll();
+        for (String index : tabs.values()) {
+            JMenuItem item = new JMenuItem(index);
+            item.addActionListener(new ClickHandler());
+            deleteTab.add(item);
+        }
     }
 
     public void addTab(Tab toAdd, String title) {
         tabbedPane.addTab(title, toAdd);
-        tabs.add(toAdd);
+        tabs.put(toAdd, title);
     }
 
     public Connection getConnectionDetails() {
@@ -59,4 +86,35 @@ public class Main extends JFrame {
         login.dispose();
         return new Connection(login.getPort(), login.getHost());
     }
+
+    private class ClickHandler implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            if (event.getSource() == newTab) {
+                logger.log(Level.INFO, "new tab created here");
+            }
+
+            if (tabs.containsValue(event.getSource().toString().split("text=")[1].split("]")[0])) {
+                logger.log(Level.INFO, "was delete button");
+            }
+        }
+    }
+
+    private class MenuHandler implements MenuListener {
+        @Override
+        public void menuSelected(MenuEvent event) {
+            if(event.getSource() == deleteTab) {
+                updateMenuContents();
+                logger.log(Level.INFO, "focus gained");
+            }
+        }
+        @Override
+        public void menuDeselected(MenuEvent event) {
+            // Isnt needed
+        }
+        @Override
+        public void menuCanceled(MenuEvent event) {
+            // Isnt needed
+        }
+     }
 }
