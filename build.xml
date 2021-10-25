@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="JChat V3" default="compile" basedir=".">
+    <description>
+        A simple build file for 3rd version of a java chatroom.
+    </description>
+
+    <property name="source" location="src"/>
+    <property name="build" location="build"/>
+    <property name="distribution" location="dist"/>
+
+    <target name="prep" 
+        description="Prepeare directory structure.">
+        <!-- Getting timestamp in format "dd/MM/yyy HH:mm:ss"-->
+        <tstamp>
+            <format property="time" pattern="dd-MM-yyyy" locale="en,GB"/>
+        </tstamp>
+
+        <mkdir dir="${build}"/>
+    </target>
+
+    <target name="compile" depends="prep"
+        description="Compile contents of ${src} into ${build}">
+        
+        <javac srcdir="${source}" destdir="${build}"/>
+    </target>
+
+    <target name="package" depends="compile"
+        description="Package contents of ${build} into a jar for distribution.">
+
+        <mkdir dir="${distribution}"/>
+        <!-- Put contents of ${build} into a jar.-->
+        <jar jarfile="${distribution}/JChatV3_${time}.jar" basedir="${build}"/>
+    </target>
+
+    <target name="clean"
+        description="Clean the project.">
+        <!-- Delete the ${build} and ${distribution} directories.-->
+        <delete dir="${build}"/>
+        <delete dir="${distribution}"/>
+    </target>
+</project>
