@@ -1,9 +1,10 @@
-package main.java.com.github.jchat_v3;
+package main.java.com.github.jchat_v3.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.GridLayout;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -24,6 +25,7 @@ public class Login extends JDialog {
 
     private static final int WIDTH = 200;
     private static final int HEIGHT = 350;
+    private static final int BORDER_SIZE = 5;
 
     private int port = 0;
     private String prePort = null;
@@ -36,8 +38,8 @@ public class Login extends JDialog {
     public Login(JFrame frame) {
         super(frame, "Input Details.");
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setResizable(false);
 
-        logger.setLevel(Level.INFO);
         this.frame = frame;
         JPanel root = new JPanel();
 
@@ -51,6 +53,7 @@ public class Login extends JDialog {
 
         confirm.addActionListener(new ClickHandler());
 
+        root.setBorder(BorderFactory.createEmptyBorder(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE));
         root.add(hostLabel);
         root.add(hostField);
         root.add(portLabel);
@@ -62,6 +65,10 @@ public class Login extends JDialog {
 
         setSize(WIDTH, HEIGHT);
         setLocationRelativeTo(frame);
+
+        // Delete this later, just for debug
+        hostField.setText("localhost");
+        portField.setText("42");
 
         setVisible(true);
     }

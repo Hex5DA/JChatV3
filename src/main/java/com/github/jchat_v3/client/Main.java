@@ -1,4 +1,4 @@
-package main.java.com.github.jchat_v3;
+package main.java.com.github.jchat_v3.client;
 
 // imports
 import javax.swing.JFrame;
@@ -25,10 +25,10 @@ public class Main extends JFrame {
 
     private static final Logger logger = Logger.getLogger(Main.class.getName());
 
-    private HashMap<Tab, String> tabs;
+    private HashMap<String, Tab> tabs;
     private JTabbedPane tabbedPane;
-    public JMenu deleteTab;
-    public JMenuItem newTab;
+    private JMenu deleteTab;
+    private JMenuItem newTab;
 
     public Main() {
         super("Java Chatroom V3");
@@ -37,7 +37,6 @@ public class Main extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        logger.setLevel(Level.INFO);
         tabs = new HashMap<>();
         tabbedPane = new JTabbedPane();
         add(tabbedPane);
@@ -52,14 +51,14 @@ public class Main extends JFrame {
         deleteTab.addMenuListener(new MenuHandler());
 
         add(top, BorderLayout.NORTH);
+        setVisible(true);
         addTab(new Tab(getConnectionDetails()), "Tab " + (tabs.size() + 1));    
         //updateMenuContents();
-        setVisible(true);
     }
 
     public void updateMenuContents() {
         deleteTab.removeAll();
-        for (String index : tabs.values()) {
+        for (String index : tabs.keySet()) {
             JMenuItem item = new JMenuItem(index);
             item.addActionListener(new ClickHandler());
             deleteTab.add(item);
@@ -68,7 +67,7 @@ public class Main extends JFrame {
 
     public void addTab(Tab toAdd, String title) {
         tabbedPane.addTab(title, toAdd);
-        tabs.put(toAdd, title);
+        tabs.put(title, toAdd);
     }
 
     public Connection getConnectionDetails() {
@@ -94,8 +93,12 @@ public class Main extends JFrame {
                 logger.log(Level.INFO, "new tab created here");
             }
 
-            if (tabs.containsValue(event.getSource().toString().split("text=")[1].split("]")[0])) {
-                logger.log(Level.INFO, "was delete button");
+            if (tabs.containsKey(event.getSource().toString().split("text=")[1].split("]")[0])) {
+                String key = event.getSource().toString().split("text=")[1].split("]")[0];
+                logger.log(Level.INFO, "Deleting tab.");
+                tabs.get(key).thread.active = false;
+                tabbedPane.remove(tabs.get(key));
+                tabs.remove(key);
             }
         }
     }
@@ -105,7 +108,7 @@ public class Main extends JFrame {
         public void menuSelected(MenuEvent event) {
             if(event.getSource() == deleteTab) {
                 updateMenuContents();
-                logger.log(Level.INFO, "focus gained");
+                logger.log(Level.INFO, "Menu focus gained.");
             }
         }
         @Override

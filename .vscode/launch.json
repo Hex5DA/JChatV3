@@ -8,6 +8,20 @@
             "type": "java",
             "name": "Launch Main",
             "request": "launch",
+            "mainClass": "main.java.com.github.jchat_v3.client.Main",
+            "projectName": "java-chatroom-v3_463b6f15"
+        },
+        {
+            "type": "java",
+            "name": "Launch Server",
+            "request": "launch",
+            "mainClass": "main.java.com.github.jchat_v3.server.Server",
+            "projectName": "java-chatroom-v3_463b6f15"
+        },
+        {
+            "type": "java",
+            "name": "Launch Main",
+            "request": "launch",
             "mainClass": "main.java.com.github.jchat_v3.Main",
             "projectName": "java-chatroom-v3_463b6f15"
         },
@@ -16,6 +30,13 @@
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch with Arguments Prompt",
+            "request": "launch",
+            "mainClass": "",
+            "args": "${command:SpecifyProgramArgs}"
         }
     ]
 }
