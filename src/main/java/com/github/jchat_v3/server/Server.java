@@ -1,6 +1,5 @@
 package main.java.com.github.jchat_v3.server;
 
-// imports
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -64,12 +63,12 @@ public class Server {
 
                 output.println("You are connected to: " + serverName);
 
-                String txt;
+                String incMsg;
 
                 while (true) {
-                    txt = input.readLine();
-                    if (txt == null) continue;
-                    logger.log(Level.INFO, txt);
+                    incMsg = input.readLine();
+                    if (incMsg == null) continue;
+                    logger.log(Level.INFO, incMsg);
                 }
             } catch (IOException exception) {
                 logger.log(Level.WARNING, "IO Error thrown: ", exception);

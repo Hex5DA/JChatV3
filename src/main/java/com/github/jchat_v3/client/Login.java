@@ -13,13 +13,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Login extends JDialog {
-    private static final Logger logger = Logger.getLogger(Login.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Login.class.getName());
 
     private JFrame frame;
 
@@ -37,7 +36,6 @@ public class Login extends JDialog {
 
     public Login(JFrame frame) {
         super(frame, "Input Details.");
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
 
         this.frame = frame;
@@ -50,7 +48,6 @@ public class Login extends JDialog {
         portField = new JTextField();
         portField.setHorizontalAlignment(SwingConstants.CENTER);
         confirm = new JButton("Confirm?");
-
         confirm.addActionListener(new ClickHandler());
 
         root.setBorder(BorderFactory.createEmptyBorder(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE));
@@ -66,7 +63,7 @@ public class Login extends JDialog {
         setSize(WIDTH, HEIGHT);
         setLocationRelativeTo(frame);
 
-        // Delete this later, just for debug
+        // Delete this later, just for testing connections
         hostField.setText("localhost");
         portField.setText("42");
 
@@ -101,13 +98,13 @@ public class Login extends JDialog {
         @Override
         public void actionPerformed(ActionEvent event) {
             if (event.getSource() == confirm) {
-                logger.log(Level.INFO, "confirm button pressed.");
+                LOGGER.log(Level.INFO, "confirm button pressed.");
                 prePort = portField.getText();
                 host = hostField.getText();
 
                 if (!checkInput()) {
                     JOptionPane.showMessageDialog(frame, "Invalid input entered.", "Invalid input.", JOptionPane.ERROR_MESSAGE);
-                    logger.log(Level.WARNING, "Invalid input detetcted.");
+                    LOGGER.log(Level.WARNING, "Invalid input.");
                 }
             }
         }

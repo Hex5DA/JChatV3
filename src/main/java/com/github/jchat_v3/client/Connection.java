@@ -1,30 +1,32 @@
 package main.java.com.github.jchat_v3.client;
 
-// imports
-import java.net.Socket;
-import java.net.UnknownHostException;
-
-import java.io.IOException;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
+import java.net.Socket;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 public class Connection {
     private int port;
     private String host;
 
-    private static final Logger logger = Logger.getLogger(Connection.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Connection.class.getName());
 
     private Socket socket;
     private PrintWriter output;
     private BufferedReader reader;
 
-    static boolean active = true;
+    private JFrame frame;
 
-    public Connection(int portA, String hostA) {
+    public Connection(int portA, String hostA, JFrame frameA) {
+        this.frame = frameA;
         this.port = portA;
         this.host = hostA;
 
@@ -32,11 +34,15 @@ public class Connection {
             socket = new Socket(host, port);
             output = new PrintWriter(socket.getOutputStream(), true);
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        } catch (UnknownHostException exception) {
-            logger.log(Level.WARNING, "UnknownHostException thrown: ", exception);
         } catch (IOException exception) {
-            logger.log(Level.WARNING, "IOException thrown: ", exception);
-        }        
+            throwError(exception);
+        }
+    }
+
+    public void throwError(Exception exception) {
+        LOGGER.log(Level.WARNING, exception.toString());
+        JOptionPane.showMessageDialog(frame, "Error occured of type: " + System.lineSeparator() + exception.toString()
+                + System.lineSeparator() + "Please close this tab.", "Error.", JOptionPane.ERROR_MESSAGE);
     }
 
     public void sendMessage(String toSend) {
@@ -47,7 +53,7 @@ public class Connection {
         try {
             return reader.readLine();
         } catch (IOException exception) {
-            logger.log(Level.WARNING, "IOException thrown: ", exception);
+            throwError(exception);
         }
         return "Could not send message.";
     }

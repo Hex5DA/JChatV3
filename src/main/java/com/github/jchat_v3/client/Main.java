@@ -1,15 +1,5 @@
 package main.java.com.github.jchat_v3.client;
 
-// imports
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JTabbedPane;
-import javax.swing.WindowConstants;
-import javax.swing.event.MenuListener;
-import javax.swing.event.MenuEvent;
-
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,16 +8,28 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
+import javax.swing.WindowConstants;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+
 public class Main extends JFrame {
     public static void main(String[] args) {
         new Main();
     }
 
-    private static final Logger logger = Logger.getLogger(Main.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    private static final int MAXTABS = 10;
 
     private HashMap<String, Tab> tabs;
     private JTabbedPane tabbedPane;
-    private JMenu deleteTab;
+    private JMenu deleteTabMenu;
     private JMenuItem newTab;
 
     public Main() {
@@ -37,6 +39,12 @@ public class Main extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception exception) {
+            LOGGER.log(Level.WARNING, "Error: ", exception);
+        }
+
         tabs = new HashMap<>();
         tabbedPane = new JTabbedPane();
         add(tabbedPane);
@@ -44,30 +52,58 @@ public class Main extends JFrame {
         JMenuBar top = new JMenuBar();
         newTab = new JMenuItem("New tab");
         newTab.addActionListener(new ClickHandler());
-        deleteTab = new JMenu("Delete tab");
+        deleteTabMenu = new JMenu("Delete tab");
 
         top.add(newTab);
-        top.add(deleteTab);
-        deleteTab.addMenuListener(new MenuHandler());
+        top.add(deleteTabMenu);
+
+        deleteTabMenu.addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent event) {
+                if (event.getSource() == deleteTabMenu) {
+                    updateMenuContents();
+                }
+            }
+            //#region
+            @Override
+            public void menuDeselected(MenuEvent event) {/**/}
+            @Override
+            public void menuCanceled(MenuEvent event) {/**/}
+            //#endregion
+        });
 
         add(top, BorderLayout.NORTH);
         setVisible(true);
-        addTab(new Tab(getConnectionDetails()), "Tab " + (tabs.size() + 1));    
-        //updateMenuContents();
+        addTab();
     }
 
     public void updateMenuContents() {
-        deleteTab.removeAll();
+        deleteTabMenu.removeAll();
         for (String index : tabs.keySet()) {
             JMenuItem item = new JMenuItem(index);
             item.addActionListener(new ClickHandler());
-            deleteTab.add(item);
+            deleteTabMenu.add(item);
         }
     }
 
-    public void addTab(Tab toAdd, String title) {
+    public void addTab() {
+        if (tabs.size() >= MAXTABS) {
+            JOptionPane.showMessageDialog(this, "Max limit of tabs is " + MAXTABS, "Tab limit reached.",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String title = "Tab " + (tabs.size() + 1);
+        Tab toAdd = new Tab(getConnectionDetails());
+
         tabbedPane.addTab(title, toAdd);
         tabs.put(title, toAdd);
+    }
+
+    public void deleteTab(String key) {
+        tabs.get(key).getThread().setActive(false);
+        tabbedPane.remove(tabs.get(key));
+        tabs.remove(key);
     }
 
     public Connection getConnectionDetails() {
@@ -78,46 +114,26 @@ public class Main extends JFrame {
                 Thread.sleep(1000);
             }
         } catch (InterruptedException exception) {
-            logger.log(Level.WARNING, "Thread interrupted.", exception);
+            LOGGER.log(Level.WARNING, "Thread interrupted.", exception);
             Thread.currentThread().interrupt();
         }
 
         login.dispose();
-        return new Connection(login.getPort(), login.getHost());
+        return new Connection(login.getPort(), login.getHost(), this);
     }
 
     private class ClickHandler implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
             if (event.getSource() == newTab) {
-                logger.log(Level.INFO, "new tab created here");
+                LOGGER.log(Level.INFO, "Creating tab.");
+                addTab();
             }
 
             if (tabs.containsKey(event.getSource().toString().split("text=")[1].split("]")[0])) {
-                String key = event.getSource().toString().split("text=")[1].split("]")[0];
-                logger.log(Level.INFO, "Deleting tab.");
-                tabs.get(key).thread.active = false;
-                tabbedPane.remove(tabs.get(key));
-                tabs.remove(key);
+                LOGGER.log(Level.INFO, "Deleting tab.");
+                deleteTab(event.getSource().toString().split("text=")[1].split("]")[0]);
             }
         }
     }
-
-    private class MenuHandler implements MenuListener {
-        @Override
-        public void menuSelected(MenuEvent event) {
-            if(event.getSource() == deleteTab) {
-                updateMenuContents();
-                logger.log(Level.INFO, "Menu focus gained.");
-            }
-        }
-        @Override
-        public void menuDeselected(MenuEvent event) {
-            // Isnt needed
-        }
-        @Override
-        public void menuCanceled(MenuEvent event) {
-            // Isnt needed
-        }
-     }
 }
