@@ -128,6 +128,7 @@ public class Main extends JFrame {
             if (event.getSource() == newTab) {
                 LOGGER.log(Level.INFO, "Creating tab.");
                 addTab();
+                // WHY DOESNT THIS WORK
             }
 
             if (tabs.containsKey(event.getSource().toString().split("text=")[1].split("]")[0])) {

@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 import java.net.Socket;
-
+import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +40,17 @@ public class Connection {
     }
 
     public void throwError(Exception exception) {
+        if (exception instanceof SocketException && socket != null) {
+            try {
+                output.close();
+                reader.close();
+                reader = null;
+                socket.close();
+            } catch (IOException internalException) {
+                throwError(internalException);
+            }
+        }
+
         LOGGER.log(Level.WARNING, exception.toString());
         JOptionPane.showMessageDialog(frame, "Error occured of type: " + System.lineSeparator() + exception.toString()
                 + System.lineSeparator() + "Please close this tab.", "Error.", JOptionPane.ERROR_MESSAGE);
@@ -50,6 +61,9 @@ public class Connection {
     }
 
     public String recieveMessage() {
+        if (reader == null)
+            return null;
+
         try {
             return reader.readLine();
         } catch (IOException exception) {

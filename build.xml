@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="JChat V3" default="compile" basedir=".">
     <description>
-        A simple build file for 3rd version of a java chatroom.
+        A simple build file for the 3rd version of a java chatroom I'm making.
     </description>
 
     <property name="source" location="src"/>
@@ -27,14 +27,24 @@
         <javac srcdir="${source}" destdir="${build}"/>
     </target>
 
-    <target name="package" depends="compile">
+    <target name="package-client" depends="compile">
         <mkdir dir="${distribution}" />
         <manifest file="${build}/META-INF/MANIFEST.MF">
             <attribute name="Class-Path" value="JChat_V3.jar" />
             <attribute name="Main-Class" value="main.java.com.github.jchat_v3.client.Main"/>    
         </manifest>
 
-        <jar manifest="${build}/META-INF/MANIFEST.MF" jarfile="${distribution}/JChat_V3_${jars_in_dist}.jar" basedir="${build}" />    
+        <jar manifest="${build}/META-INF/MANIFEST.MF" jarfile="${distribution}/JChatV3_Client_${jars_in_dist}.jar" basedir="${build}" />    
+    </target>
+
+    <target name="package-server" depends="compile">
+        <mkdir dir="${distribution}" />
+        <manifest file="${build}/META-INF/MANIFEST.MF">
+            <attribute name="Class-Path" value="JChat_V3.jar" />
+            <attribute name="Main-Class" value="main.java.com.github.jchat_v3.server.Server"/>    
+        </manifest>
+
+        <jar manifest="${build}/META-INF/MANIFEST.MF" jarfile="${distribution}/JChatV3_Server_${jars_in_dist}.jar" basedir="${build}" />    
     </target>
 
     <target name="clean"
@@ -43,10 +53,17 @@
         <delete dir="${distribution}"/>
     </target>
 
-    <target name="main" depends="package"
-        description="Compile and package.">
+    <target name="main-client" depends="package-client"
+        description="Compile and package the client.">
         <echo>
-            Building jar.
+            Building jar for the client.
+        </echo>
+    </target>
+
+    <target name="main-server" depends="package-server"
+        description="Compile and package the server.">
+        <echo>
+            Building jar for the server.
         </echo>
     </target>
 </project>

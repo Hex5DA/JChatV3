@@ -7,19 +7,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Server {
     private int port;
     private String serverName;
-    
-    private static final Logger logger = Logger.getLogger(Server.class.getName());
+
+    private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
+    private ArrayList<ServerThread> threads = new ArrayList<>();
 
     public static void main(String[] args) {
-        if (args.length < 1) return;
-        
+        if (args.length < 2)
+            return;
+
         new Server(Integer.parseInt(args[0]), args[1]);
     }
 
@@ -27,51 +29,92 @@ public class Server {
         this.port = portArgs;
         this.serverName = serverNameArgs;
 
-        String serverOnline = String.format("Server %s running on port %s.", serverName, port);
-        logger.setLevel(Level.INFO);
-        logger.log(Level.INFO, serverOnline);
+        LOGGER.setLevel(Level.INFO);
+        LOGGER.log(Level.INFO, String.format("Server %s running on port %s.", serverName, port));
 
-
-        try (
-            ServerSocket serverSocket = new ServerSocket(port);
-        ) {
+        try (ServerSocket serverSocket = new ServerSocket(port);) {
             while (true) {
                 Socket socket = serverSocket.accept();
-                logger.log(Level.INFO, "New client connected.");
-                new ServerThread(socket, serverName).start();
+                LOGGER.log(Level.INFO, "New client connected.");
+                ServerThread thread = new ServerThread(socket, serverName);
+                threads.add(thread);
+                thread.start();
             }
 
         } catch (IOException exception) {
-            logger.log(Level.WARNING, "IOException was thrown: ", exception);
+            throwError(exception);
         }
     }
 
+    public void forwardMessages(String msg) {
+        for (ServerThread thread : threads) {
+            if (!thread.getSocket().isConnected()) {
+                thread.close();
+                threads.remove(thread);
+                thread.interrupt();
+            }
+
+            LOGGER.info(msg);
+            thread.getOutput().println(msg);
+        }
+    }
+
+    public void throwError(Exception exception) {
+        LOGGER.severe("Error of type: " + exception.toString() + " thrown.");
+    }
+
     private class ServerThread extends Thread {
+        private PrintWriter output;
         private Socket socket;
+        private BufferedReader input;
         private String serverName;
 
         public ServerThread(Socket socketA, String serverNameA) {
             this.socket = socketA;
             this.serverName = serverNameA;
         }
-        
+
         @Override
         public void run() {
             try {
-                BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-
-                output.println("You are connected to: " + serverName);
-
-                String incMsg;
-
-                while (true) {
-                    incMsg = input.readLine();
-                    if (incMsg == null) continue;
-                    logger.log(Level.INFO, incMsg);
-                }
+                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                output = new PrintWriter(socket.getOutputStream(), true);
             } catch (IOException exception) {
-                logger.log(Level.WARNING, "IO Error thrown: ", exception);
+                throwError(exception);
+            }
+
+            output.println("You are connected to: " + serverName);
+
+            String incMsg;
+
+            while (true) {
+                try {
+                    incMsg = input.readLine();
+                    if (incMsg == null)
+                        continue;
+
+                    forwardMessages(incMsg);
+                } catch (IOException exception) {
+                    close();
+                }
+            }
+        }
+
+        public Socket getSocket() {
+            return socket;
+        }
+
+        public PrintWriter getOutput() {
+            return output;
+        }
+
+        public void close() {
+            output.close();
+            try {
+                input.close();
+                socket.close();
+            } catch (IOException exception) {
+                throwError(exception);
             }
         }
     }
