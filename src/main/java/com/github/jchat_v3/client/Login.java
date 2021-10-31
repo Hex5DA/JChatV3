@@ -47,7 +47,7 @@ public class Login extends JDialog {
         JLabel portLabel = new JLabel("Port:", SwingConstants.CENTER);
         portField = new JTextField();
         portField.setHorizontalAlignment(SwingConstants.CENTER);
-        confirm = new JButton("Confirm?");
+        confirm = new JButton("Confirm");
         confirm.addActionListener(new ClickHandler());
 
         root.setBorder(BorderFactory.createEmptyBorder(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE));
@@ -103,7 +103,8 @@ public class Login extends JDialog {
                 host = hostField.getText();
 
                 if (!checkInput()) {
-                    JOptionPane.showMessageDialog(frame, "Invalid input entered.", "Invalid input.", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Invalid input entered.", "Invalid input.",
+                            JOptionPane.ERROR_MESSAGE);
                     LOGGER.log(Level.WARNING, "Invalid input.");
                 }
             }
