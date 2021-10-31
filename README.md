@@ -30,7 +30,7 @@ Running Server
 
 ### Args
 
-`<port>` -> The port the server should be hosted on.
-`<server name>` -> The name of the server.
-`<max clients>` -> The maximum number of clients allowed to join.
-`<logging>` -> Enable logging. Use "log" to allow logging, leave it blank for no logging
+- `<port>` -> The port the server should be hosted on.
+- `<server name>` -> The name of the server.
+- `<max clients>` -> The maximum number of clients allowed to join.
+- `<logging>` -> Enable logging. Use "log" to allow logging, leave it blank for no logging
