@@ -12,14 +12,6 @@
         description="Prepeare directory structure.">
         <mkdir dir="${build}"/>
         <mkdir dir="${build}/META-INF"/>
-
-        <touch file="${distribution}/plus1.jar" mkdirs="true"/>
-        <resourcecount property="jars_in_dist">
-            <fileset dir="${distribution}">
-                <include name="*.jar"/>
-            </fileset>
-        </resourcecount>
-        <delete file="${distribution}/plus1.jar"/>
     </target>
 
     <target name="compile" depends="prep"
@@ -34,7 +26,7 @@
             <attribute name="Main-Class" value="main.java.com.github.jchat_v3.client.Main"/>    
         </manifest>
 
-        <jar manifest="${build}/META-INF/MANIFEST.MF" jarfile="${distribution}/JChatV3_Client_${jars_in_dist}.jar" basedir="${build}" />    
+        <jar manifest="${build}/META-INF/MANIFEST.MF" jarfile="${distribution}/JChatV3_Client.jar" basedir="${build}" />    
     </target>
 
     <target name="package-server" depends="compile">
@@ -44,7 +36,7 @@
             <attribute name="Main-Class" value="main.java.com.github.jchat_v3.server.Server"/>    
         </manifest>
 
-        <jar manifest="${build}/META-INF/MANIFEST.MF" jarfile="${distribution}/JChatV3_Server_${jars_in_dist}.jar" basedir="${build}" />    
+        <jar manifest="${build}/META-INF/MANIFEST.MF" jarfile="${distribution}/JChatV3_Server.jar" basedir="${build}" />    
     </target>
 
     <target name="clean"
