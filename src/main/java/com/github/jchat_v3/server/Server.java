@@ -4,22 +4,32 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.File;
+
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Server {
     private int port;
     private int connectedClients;
     private String serverName;
 
+    private ArrayList<ServerThread> threads = new ArrayList<>();
+    private BufferedWriter fileWriter;
+
+    private static final String LOG_FILE = "log.txt";
     private static final int MAX_CLIENTS = 10;
     private static final String POISON = Double.toString(Double.MAX_VALUE);
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
-    private ArrayList<ServerThread> threads = new ArrayList<>();
 
     public static void main(String[] args) {
         if (args.length < 2)
@@ -33,20 +43,52 @@ public class Server {
         this.port = portArgs;
         this.serverName = serverNameArgs;
 
-        LOGGER.setLevel(Level.INFO);
+        if (logEnabled)
+            initLogging();
+
         LOGGER.log(Level.INFO, String.format("Server %s running on port %s.", serverName, port));
+        writeToLog(LogTypes.SERVER, String.format("Server %s running on port %s.", serverName, port));
 
         try (ServerSocket serverSocket = new ServerSocket(port);) {
             while (true) {
-                if (connectedClients >= MAX_CLIENTS) break;
+                if (connectedClients >= MAX_CLIENTS)
+                    break;
                 Socket socket = serverSocket.accept();
                 connectedClients++;
+                writeToLog(LogTypes.SERVER, String.format("New client connected. Total of: %s", connectedClients));
                 LOGGER.log(Level.INFO, String.format("New client connected. Total of: %s", connectedClients));
                 ServerThread thread = new ServerThread(socket, serverName);
                 threads.add(thread);
                 thread.start();
             }
+        } catch (IOException exception) {
+            throwError(exception);
+        }
+    }
 
+    public void initLogging() {
+        try {
+            File logFile = new File(LOG_FILE);
+
+            if (logFile.createNewFile())
+                LOGGER.info(String.format("Log file created at: %s", logFile.getAbsolutePath()));
+            else
+                LOGGER.info(String.format("Log file already exists at: %s", logFile.getAbsolutePath()));
+
+            fileWriter = new BufferedWriter(new FileWriter(logFile, true));
+            writeToLog(LogTypes.SERVER, "Logging has started.");
+        } catch (IOException exception) {
+            throwError(exception);
+        }
+    }
+
+    public void writeToLog(LogTypes logStart, String message) {
+        try {
+            fileWriter.write(String.format("%s[%s] [%s] : %s", System.lineSeparator(),
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")), logStart.toString(),
+                    message));
+
+            fileWriter.flush();
         } catch (IOException exception) {
             throwError(exception);
         }
@@ -57,10 +99,23 @@ public class Server {
             LOGGER.info(msg);
             thread.getOutput().println(name + ": " + msg);
         }
+
+        try {
+            writeToLog(LogTypes.CLIENT, String.format("[%s] %s", name, msg));
+            fileWriter.flush();
+        } catch (IOException exception) {
+            throwError(exception);
+        }
     }
 
     public void throwError(Exception exception) {
         LOGGER.severe("Error of type: " + exception.toString() + " thrown.");
+
+        try {
+            fileWriter.write("Error of type: " + exception.toString() + " thrown.");
+            fileWriter.flush();
+        } catch (IOException internalException) {
+            /**/}
     }
 
     private class ServerThread extends Thread {
@@ -122,6 +177,11 @@ public class Server {
 
         public void close() {
             connectedClients--;
+            writeToLog(LogTypes.SERVER,
+                    String.format("Closing thread %s. There %s currently connected.", Thread.currentThread().getName(),
+                            ((connectedClients == 1) ? "is " : "are ") + connectedClients
+                                    + ((connectedClients == 1) ? " client" : " clients")));
+
             LOGGER.info(String.format("Closing thread %s. There %s currently connected.",
                     Thread.currentThread().getName(), ((connectedClients == 1) ? "is " : "are ") + connectedClients
                             + ((connectedClients == 1) ? " client" : " clients")));
@@ -134,5 +194,9 @@ public class Server {
             }
             Thread.currentThread().interrupt();
         }
+    }
+
+    enum LogTypes {
+        SERVER, CLIENT
     }
 }

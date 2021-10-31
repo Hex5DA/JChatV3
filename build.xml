@@ -43,6 +43,7 @@
         description="Clean the project.">
         <delete dir="${build}"/>
         <delete dir="${distribution}"/>
+        <delete file="log.txt"/>
     </target>
 
     <target name="main-client" depends="package-client"
