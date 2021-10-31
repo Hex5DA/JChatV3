@@ -23,19 +23,21 @@ public class Server {
     private int connectedClients;
     private String serverName;
 
+    private static int maxClients = 0;
+
     private ArrayList<ServerThread> threads = new ArrayList<>();
     private BufferedWriter fileWriter;
 
     private static final String LOG_FILE = "log.txt";
-    private static final int MAX_CLIENTS = 10;
     private static final String POISON = Double.toString(Double.MAX_VALUE);
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 
     public static void main(String[] args) {
-        if (args.length < 2)
+        if (args.length < 4)
             return;
 
-        new Server(Integer.parseInt(args[0]), args[1], args[2].equals("log"));
+        maxClients = Integer.parseInt(args[2]);
+        new Server(Integer.parseInt(args[0]), args[1], args[3].equals("log"));
     }
 
     // add loggin support, look at v1 for setup. gl <3
@@ -51,7 +53,7 @@ public class Server {
 
         try (ServerSocket serverSocket = new ServerSocket(port);) {
             while (true) {
-                if (connectedClients >= MAX_CLIENTS)
+                if (connectedClients >= maxClients)
                     break;
                 Socket socket = serverSocket.accept();
                 connectedClients++;
