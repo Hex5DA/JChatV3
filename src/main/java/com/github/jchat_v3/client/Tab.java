@@ -22,8 +22,8 @@ import javax.swing.ScrollPaneConstants;
 public class Tab extends JPanel {
     private RecieveThread thread;
     private final Connection CONNECTION;
-    private static final int BORDER_SIZE = 20;
 
+    private static final int BORDER_SIZE = 20;
     private static final Logger LOGGER = Logger.getLogger(Tab.class.getName());
 
     private JButton sendButton;
@@ -74,14 +74,28 @@ public class Tab extends JPanel {
         thread.start();
     }
 
+    public void setNameVar(String name) {
+        CONNECTION.setNameVar(name);
+    }
+
+    public Connection getConnection() {
+        return CONNECTION;
+    }
+
     public RecieveThread getThread() {
         return this.thread;
     }
 
     public void send() {
+        LOGGER.info("name: " + CONNECTION.getNameVar());
         LOGGER.info("Sending: " + sendBar.getText());
         CONNECTION.sendMessage(sendBar.getText());
         sendBar.setText("");
+    }
+
+    public void send(String toSend) {
+        LOGGER.info("Sending: " + toSend);
+        CONNECTION.sendMessage(toSend);
     }
 
     private class ClickHandler implements ActionListener {

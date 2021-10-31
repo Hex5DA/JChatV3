@@ -13,8 +13,11 @@ import java.util.logging.Logger;
 
 public class Server {
     private int port;
+    private int connectedClients;
     private String serverName;
 
+    private static final int MAX_CLIENTS = 10;
+    private static final String POISON = Double.toString(Double.MAX_VALUE);
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
     private ArrayList<ServerThread> threads = new ArrayList<>();
 
@@ -22,10 +25,11 @@ public class Server {
         if (args.length < 2)
             return;
 
-        new Server(Integer.parseInt(args[0]), args[1]);
+        new Server(Integer.parseInt(args[0]), args[1], args[2].equals("log"));
     }
 
-    public Server(int portArgs, String serverNameArgs) {
+    // add loggin support, look at v1 for setup. gl <3
+    public Server(int portArgs, String serverNameArgs, boolean logEnabled) {
         this.port = portArgs;
         this.serverName = serverNameArgs;
 
@@ -34,8 +38,10 @@ public class Server {
 
         try (ServerSocket serverSocket = new ServerSocket(port);) {
             while (true) {
+                if (connectedClients >= MAX_CLIENTS) break;
                 Socket socket = serverSocket.accept();
-                LOGGER.log(Level.INFO, "New client connected.");
+                connectedClients++;
+                LOGGER.log(Level.INFO, String.format("New client connected. Total of: %s", connectedClients));
                 ServerThread thread = new ServerThread(socket, serverName);
                 threads.add(thread);
                 thread.start();
@@ -46,16 +52,10 @@ public class Server {
         }
     }
 
-    public void forwardMessages(String msg) {
+    public void forwardMessages(String msg, String name) {
         for (ServerThread thread : threads) {
-            if (!thread.getSocket().isConnected()) {
-                thread.close();
-                threads.remove(thread);
-                thread.interrupt();
-            }
-
             LOGGER.info(msg);
-            thread.getOutput().println(msg);
+            thread.getOutput().println(name + ": " + msg);
         }
     }
 
@@ -68,6 +68,7 @@ public class Server {
         private Socket socket;
         private BufferedReader input;
         private String serverName;
+        private String name;
 
         public ServerThread(Socket socketA, String serverNameA) {
             this.socket = socketA;
@@ -83,25 +84,36 @@ public class Server {
                 throwError(exception);
             }
 
-            output.println("You are connected to: " + serverName);
+            output.println(String.format("You are connected to: %s. There %s currently connected.", serverName,
+                    ((connectedClients == 1) ? "is " : "are ") + connectedClients
+                            + ((connectedClients == 1) ? " client" : " clients")));
 
             String incMsg;
 
             while (true) {
+                if (Thread.interrupted())
+                    break;
+
                 try {
                     incMsg = input.readLine();
                     if (incMsg == null)
                         continue;
 
-                    forwardMessages(incMsg);
+                    if (incMsg.equals(POISON)) {
+                        close();
+                        break;
+                    }
+
+                    if (incMsg.startsWith("##NAME##")) {
+                        name = incMsg.split("##NAME##")[1];
+                        continue;
+                    }
+
+                    forwardMessages(incMsg, name);
                 } catch (IOException exception) {
                     close();
                 }
             }
-        }
-
-        public Socket getSocket() {
-            return socket;
         }
 
         public PrintWriter getOutput() {
@@ -109,13 +121,18 @@ public class Server {
         }
 
         public void close() {
-            output.close();
+            connectedClients--;
+            LOGGER.info(String.format("Closing thread %s. There %s currently connected.",
+                    Thread.currentThread().getName(), ((connectedClients == 1) ? "is " : "are ") + connectedClients
+                            + ((connectedClients == 1) ? " client" : " clients")));
             try {
+                output.close();
                 input.close();
                 socket.close();
             } catch (IOException exception) {
                 throwError(exception);
             }
+            Thread.currentThread().interrupt();
         }
     }
 }

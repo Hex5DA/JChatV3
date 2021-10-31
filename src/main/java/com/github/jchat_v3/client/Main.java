@@ -25,12 +25,15 @@ public class Main extends JFrame {
     }
 
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    private static final String POISON = Double.toString(Double.MAX_VALUE);
     private static final int MAXTABS = 10;
 
+    private String name;
     private HashMap<String, Tab> tabs;
     private JTabbedPane tabbedPane;
     private JMenu deleteTabMenu;
     private JMenuItem newTab;
+    private JMenuItem changeName;
 
     public Main() {
         super("Java Chatroom V3");
@@ -42,7 +45,7 @@ public class Main extends JFrame {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception exception) {
-            LOGGER.log(Level.WARNING, "Error: ", exception);
+            LOGGER.log(Level.SEVERE, "Error: ", exception);
         }
 
         tabs = new HashMap<>();
@@ -51,9 +54,15 @@ public class Main extends JFrame {
 
         JMenuBar top = new JMenuBar();
         newTab = new JMenuItem("New tab");
+        newTab.setSize(this.getWidth() / 3, top.getHeight());
         newTab.addActionListener(new ClickHandler());
         deleteTabMenu = new JMenu("Delete tab");
+        deleteTabMenu.setSize(this.getWidth() / 3, top.getHeight());
+        changeName = new JMenuItem("Change name");
+        changeName.addActionListener(new ClickHandler());
+        changeName.setSize(this.getWidth() / 3, top.getHeight());
 
+        top.add(changeName);
         top.add(newTab);
         top.add(deleteTabMenu);
 
@@ -64,17 +73,27 @@ public class Main extends JFrame {
                     updateMenuContents();
                 }
             }
-            //#region
+
+            // #region
             @Override
-            public void menuDeselected(MenuEvent event) {/**/}
+            public void menuDeselected(MenuEvent event) {
+                /**/}
+
             @Override
-            public void menuCanceled(MenuEvent event) {/**/}
-            //#endregion
+            public void menuCanceled(MenuEvent event) {
+                /**/}
+            // #endregion
         });
 
         add(top, BorderLayout.NORTH);
         setVisible(true);
         addTab();
+    }
+
+    public void updateName() {
+        for (Tab tab : tabs.values()) {
+            tab.setNameVar(name);
+        }
     }
 
     public void updateMenuContents() {
@@ -98,9 +117,16 @@ public class Main extends JFrame {
 
         tabbedPane.addTab(title, toAdd);
         tabs.put(title, toAdd);
+
+        // temporary
+        changeName();
     }
 
     public void deleteTab(String key) {
+        if (tabs.get(key).getConnection().getSocket().isConnected()
+                && tabs.get(key).getConnection().getOutput() != null)
+            tabs.get(key).send(POISON);
+
         tabs.get(key).getThread().setActive(false);
         tabbedPane.remove(tabs.get(key));
         tabs.remove(key);
@@ -122,6 +148,23 @@ public class Main extends JFrame {
         return new Connection(login.getPort(), login.getHost(), this);
     }
 
+    public void changeName() {
+        ChangeName namePopup = new ChangeName(this);
+
+        try {
+            while (!namePopup.hasInput()) {
+                Thread.sleep(1000);
+            }
+        } catch (InterruptedException exception) {
+            LOGGER.log(Level.WARNING, "Thread interrupted.", exception);
+            Thread.currentThread().interrupt();
+        }
+
+        name = namePopup.getNameVar();
+        namePopup.dispose();
+        updateName();
+    }
+
     private class ClickHandler implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
@@ -134,6 +177,10 @@ public class Main extends JFrame {
             if (tabs.containsKey(event.getSource().toString().split("text=")[1].split("]")[0])) {
                 LOGGER.log(Level.INFO, "Deleting tab.");
                 deleteTab(event.getSource().toString().split("text=")[1].split("]")[0]);
+            }
+
+            if (event.getSource() == changeName) {
+                changeName();
             }
         }
     }

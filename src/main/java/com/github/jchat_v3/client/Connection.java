@@ -16,6 +16,7 @@ import javax.swing.JOptionPane;
 public class Connection {
     private int port;
     private String host;
+    private String name;
 
     private static final Logger LOGGER = Logger.getLogger(Connection.class.getName());
 
@@ -37,6 +38,23 @@ public class Connection {
         } catch (IOException exception) {
             throwError(exception);
         }
+    }
+    
+    public Socket getSocket() {
+        return socket;
+    }
+    
+    public PrintWriter getOutput() {
+        return output;
+    }
+    
+    public void setNameVar(String name) {
+        this.name = name;  
+        output.println("##NAME##" + name);
+    }
+
+    public String getNameVar() {
+        return this.name;
     }
 
     public void throwError(Exception exception) {
