@@ -2,3 +2,5 @@ build/
 dist/
 .vscode/
 log.txt
+jre-16/
+JChatV3.exe
