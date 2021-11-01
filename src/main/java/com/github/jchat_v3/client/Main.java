@@ -87,7 +87,6 @@ public class Main extends JFrame {
 
         add(top, BorderLayout.NORTH);
         setVisible(true);
-        addTab();
     }
 
     public void updateName() {
@@ -118,13 +117,12 @@ public class Main extends JFrame {
         tabbedPane.addTab(title, toAdd);
         tabs.put(title, toAdd);
 
-        // temporary
-        changeName();
+        if (name == null) changeName();
+        updateName();
     }
 
     public void deleteTab(String key) {
-        if (tabs.get(key).getConnection().getSocket().isConnected()
-                && tabs.get(key).getConnection().getOutput() != null)
+        if (tabs.get(key).getConnection().getOutput() != null) 
             tabs.get(key).send(POISON);
 
         tabs.get(key).getThread().setActive(false);
@@ -144,7 +142,6 @@ public class Main extends JFrame {
             Thread.currentThread().interrupt();
         }
 
-        login.dispose();
         return new Connection(login.getPort(), login.getHost(), this);
     }
 
@@ -161,7 +158,6 @@ public class Main extends JFrame {
         }
 
         name = namePopup.getNameVar();
-        namePopup.dispose();
         updateName();
     }
 
@@ -170,8 +166,7 @@ public class Main extends JFrame {
         public void actionPerformed(ActionEvent event) {
             if (event.getSource() == newTab) {
                 LOGGER.log(Level.INFO, "Creating tab.");
-                addTab();
-                // WHY DOESNT THIS WORK
+                addTab(); // WHY DOESNT THIS WORK
             }
 
             if (tabs.containsKey(event.getSource().toString().split("text=")[1].split("]")[0])) {

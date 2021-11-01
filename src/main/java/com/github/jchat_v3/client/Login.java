@@ -1,18 +1,18 @@
 package main.java.com.github.jchat_v3.client;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.GridLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 public class Login extends JDialog {
     private static final Logger LOGGER = Logger.getLogger(Login.class.getName());
 
-    private JFrame frame;
 
     private static final int WIDTH = 200;
     private static final int HEIGHT = 350;
@@ -34,11 +33,20 @@ public class Login extends JDialog {
     private JTextField hostField;
     private JTextField portField;
 
-    public Login(JFrame frame) {
-        super(frame, "Input Details.");
+    public Login(Main main) {
+        super(main, "Input Details.", ModalityType.APPLICATION_MODAL);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
 
-        this.frame = frame;
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                setModalityType(ModalityType.MODELESS);
+                LOGGER.info("Closing.");
+                dispose();
+            }
+        });
+
         JPanel root = new JPanel();
 
         JLabel hostLabel = new JLabel("Host:", SwingConstants.CENTER);
@@ -48,7 +56,21 @@ public class Login extends JDialog {
         portField = new JTextField();
         portField.setHorizontalAlignment(SwingConstants.CENTER);
         confirm = new JButton("Confirm");
-        confirm.addActionListener(new ClickHandler());
+
+        confirm.addActionListener(event -> {
+            setModal(false);
+            LOGGER.log(Level.INFO, "confirm button pressed.");
+            prePort = portField.getText();
+            host = hostField.getText();
+
+            if (!checkInput()) {
+                JOptionPane.showMessageDialog(main, "Invalid input entered.", "Invalid input.",
+                        JOptionPane.ERROR_MESSAGE);
+                LOGGER.log(Level.WARNING, "Invalid input.");
+            }
+
+            dispose();
+        });
 
         root.setBorder(BorderFactory.createEmptyBorder(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE));
         root.add(hostLabel);
@@ -61,7 +83,7 @@ public class Login extends JDialog {
         add(root);
 
         setSize(WIDTH, HEIGHT);
-        setLocationRelativeTo(frame);
+        setLocationRelativeTo(main);
 
         // Delete this later, just for testing connections
         hostField.setText("localhost");
@@ -92,22 +114,5 @@ public class Login extends JDialog {
             return false;
         }
         return true;
-    }
-
-    private class ClickHandler implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent event) {
-            if (event.getSource() == confirm) {
-                LOGGER.log(Level.INFO, "confirm button pressed.");
-                prePort = portField.getText();
-                host = hostField.getText();
-
-                if (!checkInput()) {
-                    JOptionPane.showMessageDialog(frame, "Invalid input entered.", "Invalid input.",
-                            JOptionPane.ERROR_MESSAGE);
-                    LOGGER.log(Level.WARNING, "Invalid input.");
-                }
-            }
-        }
     }
 }

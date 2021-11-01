@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Server {
+    private boolean logEnabled;
     private int port;
     private int connectedClients;
     private String serverName;
@@ -33,21 +34,20 @@ public class Server {
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 
     public static void main(String[] args) {
-        if (args.length < 4)
+        if (args.length < 3)
             return;
 
         maxClients = Integer.parseInt(args[2]);
-        new Server(Integer.parseInt(args[0]), args[1], args[3].equals("log"));
+        new Server(Integer.parseInt(args[0]), args[1], (args.length > 3) && args[3].equals("log"));
     }
 
     // add loggin support, look at v1 for setup. gl <3
     public Server(int portArgs, String serverNameArgs, boolean logEnabled) {
         this.port = portArgs;
         this.serverName = serverNameArgs;
+        this.logEnabled = logEnabled;
 
-        if (logEnabled)
-            initLogging();
-
+        initLogging();
         LOGGER.log(Level.INFO, String.format("Server %s running on port %s.", serverName, port));
         writeToLog(LogTypes.SERVER, String.format("Server %s running on port %s.", serverName, port));
 
@@ -69,6 +69,8 @@ public class Server {
     }
 
     public void initLogging() {
+        if (!logEnabled)
+            return;
         try {
             File logFile = new File(LOG_FILE);
 
@@ -85,6 +87,8 @@ public class Server {
     }
 
     public void writeToLog(LogTypes logStart, String message) {
+        if (!logEnabled)
+            return;
         try {
             fileWriter.write(String.format("%s[%s] [%s] : %s", System.lineSeparator(),
                     LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")), logStart.toString(),
@@ -102,12 +106,7 @@ public class Server {
             thread.getOutput().println(name + ": " + msg);
         }
 
-        try {
-            writeToLog(LogTypes.CLIENT, String.format("[%s] %s", name, msg));
-            fileWriter.flush();
-        } catch (IOException exception) {
-            throwError(exception);
-        }
+        writeToLog(LogTypes.CLIENT, String.format("[%s] %s", name, msg));
     }
 
     public void throwError(Exception exception) {
