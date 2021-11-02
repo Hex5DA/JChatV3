@@ -51,6 +51,7 @@ public class Server {
         LOGGER.log(Level.INFO, String.format("Server %s running on port %s.", serverName, port));
         writeToLog(LogTypes.SERVER, String.format("Server %s running on port %s.", serverName, port));
 
+        throwError(new Exception("test"));
         try (ServerSocket serverSocket = new ServerSocket(port);) {
             while (true) {
                 if (connectedClients >= maxClients)
@@ -111,12 +112,7 @@ public class Server {
 
     public void throwError(Exception exception) {
         LOGGER.severe("Error of type: " + exception.toString() + " thrown.");
-
-        try {
-            fileWriter.write("Error of type: " + exception.toString() + " thrown.");
-            fileWriter.flush();
-        } catch (IOException internalException) {
-            /**/}
+        writeToLog(LogTypes.ERROR, "Error of type: \"" + exception.toString() + "\" thrown.");
     }
 
     private class ServerThread extends Thread {
@@ -198,6 +194,6 @@ public class Server {
     }
 
     enum LogTypes {
-        SERVER, CLIENT
+        SERVER, CLIENT, ERROR
     }
 }
