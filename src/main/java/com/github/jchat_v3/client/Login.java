@@ -42,7 +42,6 @@ public class Login extends JDialog {
             @Override
             public void windowClosing(WindowEvent event) {
                 setModalityType(ModalityType.MODELESS);
-                LOGGER.info("Closing.");
                 dispose();
             }
         });
@@ -59,7 +58,6 @@ public class Login extends JDialog {
 
         confirm.addActionListener(event -> {
             setModal(false);
-            LOGGER.log(Level.INFO, "confirm button pressed.");
             prePort = portField.getText();
             host = hostField.getText();
 
@@ -84,10 +82,6 @@ public class Login extends JDialog {
 
         setSize(WIDTH, HEIGHT);
         setLocationRelativeTo(main);
-
-        // Delete this later, just for testing connections
-        hostField.setText("localhost");
-        portField.setText("42");
 
         setVisible(true);
     }

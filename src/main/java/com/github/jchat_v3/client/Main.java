@@ -43,7 +43,7 @@ public class Main extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        ImageIcon icon = new ImageIcon("src\\main\\rescources\\java_chatroom_icon.png"); 
+        ImageIcon icon = new ImageIcon("src\\main\\rescources\\java_chatroom_icon.png");
         setIconImage(icon.getImage());
 
         try {
@@ -121,12 +121,13 @@ public class Main extends JFrame {
         tabbedPane.addTab(title, toAdd);
         tabs.put(title, toAdd);
 
-        if (name == null) changeName();
+        if (name == null)
+            changeName();
         updateName();
     }
 
     public void deleteTab(String key) {
-        if (tabs.get(key).getConnection().getOutput() != null) 
+        if (tabs.get(key).getConnection().getOutput() != null)
             tabs.get(key).send(POISON);
 
         tabs.get(key).getThread().setActive(false);
@@ -168,19 +169,15 @@ public class Main extends JFrame {
     private class ClickHandler implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent event) {
-            if (event.getSource() == newTab) {
-                LOGGER.log(Level.INFO, "Creating tab.");
-                addTab(); // WHY DOESNT THIS WORK
-            }
+            if (event.getSource() == newTab)
+                addTab();
 
-            if (tabs.containsKey(event.getSource().toString().split("text=")[1].split("]")[0])) {
-                LOGGER.log(Level.INFO, "Deleting tab.");
+            if (tabs.containsKey(event.getSource().toString().split("text=")[1].split("]")[0]))
                 deleteTab(event.getSource().toString().split("text=")[1].split("]")[0]);
-            }
 
-            if (event.getSource() == changeName) {
+            if (event.getSource() == changeName)
                 changeName();
-            }
+
         }
     }
 }

@@ -87,7 +87,6 @@ public class Tab extends JPanel {
     }
 
     public void send() {
-        LOGGER.info("name: " + CONNECTION.getNameVar());
         LOGGER.info("Sending: " + sendBar.getText());
         CONNECTION.sendMessage(sendBar.getText());
         sendBar.setText("");
