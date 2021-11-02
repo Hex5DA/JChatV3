@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -41,6 +42,9 @@ public class Main extends JFrame {
         setSize(1400, 700);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+
+        ImageIcon icon = new ImageIcon("src\\main\\rescources\\java_chatroom_icon.png"); 
+        setIconImage(icon.getImage());
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
