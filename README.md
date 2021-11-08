@@ -1,7 +1,6 @@
 # Simple java chatroom project
 
 A simple java chatroom with GUI client and a CLI server.
-Changing your nickname and creating new tabs is broken. No idea why ¯\\_(ツ)\_/¯
 Other than its buggy and bad but hey, was fun to make.
 
 ## Install
