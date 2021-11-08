@@ -51,7 +51,6 @@ public class Server {
         LOGGER.log(Level.INFO, String.format("Server %s running on port %s.", serverName, port));
         writeToLog(LogTypes.SERVER, String.format("Server %s running on port %s.", serverName, port));
 
-        throwError(new Exception("test"));
         try (ServerSocket serverSocket = new ServerSocket(port);) {
             while (true) {
                 if (connectedClients >= maxClients)
