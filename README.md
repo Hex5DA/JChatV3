@@ -21,6 +21,12 @@ Other than its buggy and bad but hey, was fun to make.
 
 ## Running
 
+Running exe:
+Download the zip from v1.1 release.
+Extract the zip.
+Run the exe.
+Cross your fingers :P
+
 Running Client:
 `java -jar /dist/JChatV3_Client.jar`
 
