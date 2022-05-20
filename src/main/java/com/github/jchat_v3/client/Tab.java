@@ -43,7 +43,7 @@ public class Tab extends JPanel {
         history.setEditable(false);
         JScrollPane historyScrollPane = new JScrollPane(history, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         historyScrollPane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        
+
         sendBar.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
         bottom.setBorder(BorderFactory.createEmptyBorder(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE));
         bottom.add(sendBar);

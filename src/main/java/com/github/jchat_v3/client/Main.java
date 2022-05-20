@@ -123,7 +123,7 @@ public class Main extends JFrame {
 
         if (name == null)
             changeName();
-        updateName();
+        // updateName();
     }
 
     public void deleteTab(String key) {
