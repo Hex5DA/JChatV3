@@ -13,8 +13,7 @@ import main.java.com.github.jchat_v3.server.Logging.LogTypes;
 
 public class ServerThread extends Thread {
     private static final String POISON = Double.toString(Double.MAX_VALUE);
-
-    private ArrayList<ServerThread> threads = new ArrayList<>();
+    private static ArrayList<ServerThread> threads = new ArrayList<>();
     private static int connectedClients = 0;
 
     private BufferedReader input;
@@ -45,26 +44,23 @@ public class ServerThread extends Thread {
 
         this.socket = socket;
         this.serverName = serverName;
+
+        try {
+            this.input = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+            this.output = new PrintWriter(this.socket.getOutputStream(), true);
+        } catch (IOException exception) {
+            Logging.throwError(exception);
+        }
     }
 
     @Override
     public void run() {
-        try {
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            output = new PrintWriter(socket.getOutputStream(), true);
-        } catch (IOException exception) {
-            Logging.throwError(exception);
-        }
-
         output.println(String.format("You are connected to: %s. There %s currently connected.", serverName,
                 ((connectedClients == 1) ? "is " : "are ") + connectedClients
                         + ((connectedClients == 1) ? " client" : " clients")));
 
         String incMsg;
-        while (true) {
-            if (Thread.interrupted())
-                break;
-
+        while (!Thread.interrupted()) {
             try {
                 incMsg = input.readLine();
                 if (incMsg == null)
@@ -76,9 +72,9 @@ public class ServerThread extends Thread {
                 }
 
                 if (incMsg.startsWith("##NAME##")) {
-                    Logging.log(LogTypes.DEBUG, incMsg);
                     String old = name;
                     name = incMsg.split("##NAME##")[1];
+
                     if (old != null) {
                         forwardMessages(String.format("\"%s\" has changed their name to \"%s\"", old, name),
                                 LogTypes.SERVER.toString());
@@ -98,7 +94,7 @@ public class ServerThread extends Thread {
     }
 
     public PrintWriter getOutput() {
-        return output;
+        return this.output;
     }
 
     public void close() {
@@ -108,14 +104,14 @@ public class ServerThread extends Thread {
                 ((connectedClients == 1) ? "is " : "are ") + connectedClients
                         + ((connectedClients == 1) ? " client" : " clients"));
 
-        forwardMessages(String.format("\"%s\" has left. %s", name, remaining), name);
+        forwardMessages(String.format("\"%s\" has left. %s", name, remaining), LogTypes.SERVER.toString());
         Logging.log(LogTypes.SERVER,
                 String.format("Closing thread %s. %s", Thread.currentThread().getName(), remaining));
 
         try {
-            output.close();
-            input.close();
-            socket.close();
+            this.output.close();
+            this.input.close();
+            this.socket.close();
         } catch (IOException exception) {
             Logging.throwError(exception);
         }

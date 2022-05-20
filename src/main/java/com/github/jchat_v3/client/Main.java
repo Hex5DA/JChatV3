@@ -95,7 +95,7 @@ public class Main extends JFrame {
 
     public void updateName() {
         for (Tab tab : tabs.values()) {
-            tab.setNameVar(name);
+            tab.setNameVar(this.name);
         }
     }
 
@@ -121,9 +121,11 @@ public class Main extends JFrame {
         tabbedPane.addTab(title, toAdd);
         tabs.put(title, toAdd);
 
-        if (name == null)
+        if (this.name == null) {
             changeName();
-        // updateName();
+        } else {
+            toAdd.getConnection().setNameVar(this.name);
+        }
     }
 
     public void deleteTab(String key) {
@@ -162,7 +164,7 @@ public class Main extends JFrame {
             Thread.currentThread().interrupt();
         }
 
-        name = namePopup.getNameVar();
+        this.name = namePopup.getNameVar();
         updateName();
     }
 
